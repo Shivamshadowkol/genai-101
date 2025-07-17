@@ -1,1 +1,195 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internet Lore Fun Facts Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.5s;
+      background: linear-gradient(135deg, #e0e7ef 0%, #c7d2fe 100%);
+    }
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2rem 2.5rem;
+      max-width: 400px;
+      width: 90vw;
+      text-align: center;
+      position: relative;
+    }
+    h1 {
+      color: #4f46e5;
+      margin-bottom: 0.5em;
+      font-size: 2rem;
+    }
+    #emoji {
+      font-size: 2.5rem;
+      margin-bottom: 0.5em;
+      display: block;
+      transition: opacity 0.3s;
+    }
+    #fact-display {
+      font-size: 1.15rem;
+      color: #374151;
+      margin: 1.5em 0;
+      min-height: 60px;
+      transition: color 0.2s;
+    }
+    button {
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75em 1.5em;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(79,70,229,0.08);
+      transition: background 0.2s, transform 0.1s;
+      margin: 0.5em;
+    }
+    button:hover {
+      background: #6366f1;
+      transform: translateY(-2px) scale(1.03);
+    }
+    #share-btn {
+      background: #1da1f2;
+      color: #fff;
+      margin-top: 0.5em;
+    }
+    #share-btn:hover {
+      background: #0d8ddb;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 1.2rem 0.5rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Internet Lore Fun Facts</h1>
+    <span id="emoji"></span>
+    <div id="fact-display">Click the button to see a fun fact!</div>
+    <button onclick="generateFact()">Generate Fun Fact</button>
+    <button id="share-btn" onclick="shareToTwitter()" style="display:none;">Share to Twitter</button>
+  </div>
+  <script>
+    // Fun facts array
+    const facts = [
+      "The first ever YouTube video, titled 'Me at the zoo,' was uploaded by Jawed Karim on April 23, 2005.",
+      "The 'Rickroll' meme, where users are tricked into watching Rick Astley's 'Never Gonna Give You Up,' has been a staple of internet pranks since 2007.",
+      "The term 'meme' was coined by Richard Dawkins in his 1976 book 'The Selfish Gene,' long before the internet made memes famous.",
+      "The 'Doge' meme, featuring a Shiba Inu with multicolored Comic Sans text, became so popular that it inspired its own cryptocurrency: Dogecoin.",
+      "The 'Peanut Butter Jelly Time' dancing banana animation first appeared on the internet in 2002 and quickly became a viral sensation.",
+      "The 'Keyboard Cat' video, featuring a cat playing a keyboard, was originally filmed in 1984 but became an internet hit in 2007.",
+      "The 'Nyan Cat' meme, a pixelated cat with a Pop-Tart body flying through space, was created in 2011 and its YouTube video has millions of views.",
+      "The '404 Not Found' error page is so iconic that many websites create custom, humorous versions for lost visitors.",
+      "The 'Ice Bucket Challenge' went viral in 2014, raising over $115 million for ALS research through social media sharing.",
+      "The 'Distracted Boyfriend' stock photo became a global meme template in 2017, used to humorously depict shifting loyalties."
+    ];
+    let bg = 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)';
+
+    // Keyword to style/emoji mapping
+    const keywordStyles = [
+      {
+        keywords: ['youtube', 'video'],
+        background: 'linear-gradient(135deg, #ff0000 0%, #fff 100%)',
+        emoji: '📹'
+      },
+      {
+        keywords: ['rickroll', 'rick astley'],
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f472b6 100%)',
+        emoji: '🎶'
+      },
+      {
+        keywords: ['meme', 'doge', 'nyan', 'cat', 'shiba', 'pop-tart'],
+        background: 'linear-gradient(135deg, #a7f3d0 0%, #f9fafb 100%)',
+        emoji: '😺'
+      },
+      {
+        keywords: ['banana', 'peanut butter jelly'],
+        background: 'linear-gradient(135deg, #fde68a 0%, #fbbf24 100%)',
+        emoji: '🍌'
+      },
+      {
+        keywords: ['keyboard cat'],
+        background: 'linear-gradient(135deg, #f472b6 0%, #a78bfa 100%)',
+        emoji: '🎹'
+      },
+      {
+        keywords: ['404', 'not found', 'error'],
+        background: 'linear-gradient(135deg, #f87171 0%, #fef3c7 100%)',
+        emoji: '❓'
+      },
+      {
+        keywords: ['ice bucket', 'challenge', 'als'],
+        background: 'linear-gradient(135deg, #60a5fa 0%, #f9fafb 100%)',
+        emoji: '🧊'
+      },
+      {
+        keywords: ['distracted boyfriend'],
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f472b6 100%)',
+        emoji: '👨‍❤️‍👨'
+      }
+    ];
+
+    let currentFact = '';
+
+    function generateFact() {
+      const display = document.getElementById('fact-display');
+      const emojiSpan = document.getElementById('emoji');
+      const shareBtn = document.getElementById('share-btn');
+      const randomIndex = Math.floor(Math.random() * facts.length);
+      const fact = facts[randomIndex];
+      currentFact = fact;
+
+      // Default styles
+      let bg = 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)';
+      let emoji = '';
+
+      // Check for keywords
+      for (const style of keywordStyles) {
+        for (const keyword of style.keywords) {
+          if (fact.toLowerCase().includes(keyword)) {
+            bg = style.background;
+            emoji = style.emoji;
+            break;
+          }
+        }
+        if (emoji) break;
+      }
+
+      document.body.style.background = bg;
+      emojiSpan.textContent = emoji;
+      emojiSpan.style.opacity = emoji ? 1 : 0;
+      display.textContent = fact;
+      display.style.color = "#4f46e5";
+      setTimeout(() => display.style.color = "#374151", 300);
+
+      // Show share button
+      shareBtn.style.display = 'inline-block';
+    }
+
+    function shareToTwitter() {
+      const text = encodeURIComponent(currentFact + " #InternetLore #FunFact");
+      const url = encodeURIComponent(window.location.href);
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+      window.open(twitterUrl, '_blank');
+    }
+  </script>
+</body>
+</html>
